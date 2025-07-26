@@ -11,7 +11,7 @@ import os
 import json
 import sqlite3
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Union, Any, Tuple
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import base64
@@ -36,20 +36,20 @@ app.add_middleware(
 )
 
 # Global variables
-MODEL = None
-DEVICE = None
-TRANSFORM = None
-DATABASE_PATH = "predictions.db"
+MODEL: Optional[torch.nn.Module] = None
+DEVICE: Optional[torch.device] = None
+TRANSFORM: Optional[A.Compose] = None
+DATABASE_PATH: str = "predictions.db"
 
 # Configuration
-CONFIG = {
+CONFIG: Dict[str, Union[str, int, List[str], float]] = {
     "model_path": "models/best_brain_tumor_model.pth",
     "image_size": 224,
     "class_names": ["No Tumor", "Tumor"],
     "confidence_threshold": 0.5
 }
 
-def initialize_database():
+def initialize_database() -> None:
     """Initialize SQLite database for storing predictions"""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
@@ -70,7 +70,7 @@ def initialize_database():
     conn.commit()
     conn.close()
 
-def get_transform():
+def get_transform() -> A.Compose:
     """Get image preprocessing transform"""
     return A.Compose([
         A.Resize(CONFIG["image_size"], CONFIG["image_size"]),
@@ -81,7 +81,7 @@ def get_transform():
         ToTensorV2()
     ])
 
-def load_trained_model():
+def load_trained_model() -> torch.nn.Module:
     """Load the trained model"""
     global MODEL, DEVICE, TRANSFORM
     
@@ -111,13 +111,13 @@ def load_trained_model():
     print("Model loaded successfully!")
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Initialize the API"""
     initialize_database()
     load_trained_model()
 
 @app.get("/")
-async def root():
+async def root() -> Dict[str, str]:
     """Root endpoint"""
     return {
         "message": "Brain Tumor Detection API",
@@ -287,7 +287,7 @@ async def predict_batch_images(files: List[UploadFile] = File(...)):
         "timestamp": datetime.now().isoformat()
     })
 
-def store_prediction(filename: str, result: dict, image_data: bytes):
+def store_prediction(filename: str, result: Dict[str, Any], image_data: bytes) -> None:
     """Store prediction in database"""
     try:
         conn = sqlite3.connect(DATABASE_PATH)

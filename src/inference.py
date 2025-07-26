@@ -12,7 +12,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from PIL import Image
 import os
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Union, Optional, Any
 import logging
 
 # Import the updated model
@@ -23,7 +23,7 @@ class BrainTumorPredictor:
     Inference class for brain tumor detection with all notebook fixes applied
     """
     
-    def __init__(self, model_path: str, device: str = None):
+    def __init__(self, model_path: str, device: Optional[str] = None) -> None:
         """
         Initialize the predictor
         
@@ -32,9 +32,9 @@ class BrainTumorPredictor:
             device: Device to run inference on ('cuda' or 'cpu')
         """
         self.device = device if device else ('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = None
+        self.model: Optional[BrainTumorViT] = None
         self.transform = get_val_transforms(image_size=224)
-        self.class_names = ['No Tumor', 'Tumor']
+        self.class_names: List[str] = ['No Tumor', 'Tumor']
         
         # Load model
         self.load_model(model_path)
@@ -43,7 +43,7 @@ class BrainTumorPredictor:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
     
-    def load_model(self, model_path: str):
+    def load_model(self, model_path: str) -> None:
         """Load the trained model with proper error handling"""
         try:
             # Create model instance

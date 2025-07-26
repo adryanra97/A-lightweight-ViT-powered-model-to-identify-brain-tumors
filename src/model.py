@@ -9,7 +9,7 @@ specifically designed for brain tumor detection in MRI images.
 import torch
 import torch.nn as nn
 import timm
-from typing import Optional
+from typing import Optional, Dict, Tuple, Any
 
 class BrainTumorViT(nn.Module):
     """
@@ -68,7 +68,7 @@ class BrainTumorViT(nn.Module):
         # Initialize classifier weights
         self._init_classifier()
     
-    def _init_classifier(self):
+    def _init_classifier(self) -> None:
         """Initialize classifier layer weights"""
         for m in self.classifier.modules():
             if isinstance(m, nn.Linear):
@@ -76,7 +76,16 @@ class BrainTumorViT(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
     
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass through the model
+        
+        Args:
+            x: Input tensor of shape (batch_size, channels, height, width)
+            
+        Returns:
+            Output logits of shape (batch_size, num_classes)
+        """
         # Extract features using ViT backbone
         features = self.backbone(x)
         
@@ -85,8 +94,16 @@ class BrainTumorViT(nn.Module):
         
         return output
     
-    def extract_features(self, x):
-        """Extract features without classification"""
+    def extract_features(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Extract features without classification
+        
+        Args:
+            x: Input tensor of shape (batch_size, channels, height, width)
+            
+        Returns:
+            Feature tensor of shape (batch_size, feature_dim)
+        """
         with torch.no_grad():
             features = self.backbone(x)
             pooled_features = nn.AdaptiveAvgPool2d(1)(features)
@@ -120,7 +137,7 @@ def create_model(
 
 
 # Available ViT models for different computational requirements
-AVAILABLE_MODELS = {
+AVAILABLE_MODELS: Dict[str, str] = {
     "vit_tiny_patch16_224": "Tiny ViT - Fastest, Lower Accuracy",
     "vit_small_patch16_224": "Small ViT - Balanced Speed/Accuracy",
     "vit_base_patch16_224": "Base ViT - Good Accuracy, Moderate Speed",
