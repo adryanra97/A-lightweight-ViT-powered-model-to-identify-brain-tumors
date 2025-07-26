@@ -1,0 +1,48 @@
+# Brain Tumor Detection - Git Ignore File
+# Author: Adryan R A
+# Year: 2025
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.venv/
+
+# Data and Models
+brain_tumor_dataset/
+models/
+data/
+notebooks/
+uploads/
+
+# Training outputs
+*.pth
+*.pt
+*.pkl
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+.DS_Store?
+
+# Jupyter
+.ipynb_checkpoints
+
+# Environment
+.env
+
+# Temporary files
+*.tmp
+*.temp
+
+# Keep important files
+!README.md
+!requirements.txt
+!Dockerfile
+!docker-compose.yml
+!.gitignore
+!deploy.sh
+!nginx.conf

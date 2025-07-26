@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  brain-tumor-detection:
+    build: .
+    container_name: brain-tumor-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - MODEL_PATH=/app/models/brain_tumor_vit_model.pth
+      - UPLOAD_FOLDER=/app/uploads
+      - MAX_CONTENT_LENGTH=16777216
+    volumes:
+      # Mount uploads directory for persistence
+      - ./uploads:/app/uploads
+      # Mount logs directory for persistence
+      - ./logs:/app/logs
+      # Mount models directory if you have trained models
+      - ./trained_model:/app/models:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add a reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: brain-tumor-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # If you have SSL certificates
+    depends_on:
+      - brain-tumor-detection
+    restart: unless-stopped
+    profiles:
+      - production  # Only start with --profile production
+
+volumes:
+  uploads:
+  logs:
+  models:
